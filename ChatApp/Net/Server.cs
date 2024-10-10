@@ -27,13 +27,13 @@ namespace ChatClient.Net
                 _client.Connect("127.0.0.1", 7891);
                 PacketReader = new PacketReader(_client.GetStream());
 
+                ReadPackets();
                 if (!string.IsNullOrEmpty(username)){
                     var connectPacket = new PacketBuilder();
                     connectPacket.WriteOpCode(0);
                     connectPacket.WriteMessage(username);
                     _client.Client.Send(connectPacket.GetPacketBytes());
                 }
-                ReadPackets();
 
             }
         }
