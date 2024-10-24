@@ -1,17 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ChatApp.Net.IO
 {
     class PacketBuilder
     {
-        MemoryStream _ms;
-        public PacketBuilder() 
-        { 
+        private MemoryStream _ms;
+
+        public PacketBuilder()
+        {
             _ms = new MemoryStream();
         }
 
@@ -22,16 +20,17 @@ namespace ChatApp.Net.IO
 
         public void WriteMessage(string msg)
         {
-            var msgBytes = Encoding.ASCII.GetBytes(msg);
-            var msgLenght = msgBytes.Length;
-            _ms.Write(BitConverter.GetBytes(msgLenght));
-            _ms.Write(msgBytes);
+            var msgBytes = Encoding.UTF8.GetBytes(msg);
+            var msgLength = msgBytes.Length;
+            _ms.Write(BitConverter.GetBytes(msgLength), 0, sizeof(int)); // Write the length of the message
+            _ms.Write(msgBytes, 0, msgLength); // Write the actual message bytes
         }
 
-        public byte[ ] GetPacketBytes()
+        public byte[] GetPacketBytes()
         {
-            return _ms.ToArray();
+            var packetBytes = _ms.ToArray();
+            _ms.SetLength(0); // Reset the MemoryStream for future use
+            return packetBytes;
         }
-
     }
 }

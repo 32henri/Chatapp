@@ -59,9 +59,7 @@ namespace ChatConsole
                             userDisconnectedEvent?.Invoke();
                             break;
 
-                        default:
-                            Console.WriteLine("ah yes..");
-                            break;
+
                     }
                 }
             });
