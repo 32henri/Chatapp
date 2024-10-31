@@ -62,9 +62,9 @@ namespace ChatServer
         public static void BroadcastDisconnect(string uid)
         {
             var disconnectedUser = _users.FirstOrDefault(x => x.UID.ToString() == uid);
+            _users.Remove(disconnectedUser);
             if (disconnectedUser != null)
             {
-                _users.Remove(disconnectedUser);
                 foreach (var user in _users)
                 {
                     var broadcastPacket = new PacketBuilder();
