@@ -10,84 +10,50 @@ using ChatConsole.Model;
 
 class Program
 {
-    //public ObservableCollection<string> Messages { get; set; }
-
-
     static void Main()
     {
-        Console.WriteLine("Enter name to connect");
-        var name = Console.ReadLine();
-        var message = string.Empty;
-        var input = new MainViewModel(name);
+        string name = Environment.GetEnvironmentVariable("USERNAME");
 
-
-        while (true)
+        if (string.IsNullOrEmpty(name))
         {
-            message = Console.ReadLine();
-            input.SendMessage(message);
+            // If the environment variable is not set, ask the user to input the username
+            Console.Write("Enter your username: ");
+            name = Console.ReadLine();
         }
 
-        //DisplayCommands();
+        if (string.IsNullOrEmpty(name))
+        {
+            Console.WriteLine("Username cannot be empty. Exiting...");
+            return;
+        }
 
-        //Server server = new Server();
+        var server = new Server();
 
+        // Attempt to connect to the server
+        if (!server.ConnectToServer(name))  // Connect with the dynamic username
+        {
+            Console.WriteLine("Connection failed. Ensure the server is running.");
+            return;
+        }
 
-        //    while (true)
-        //    {
-        //        server.connectedEvent += () => Console.WriteLine("User " + name + " connected to the server");
-        //        server.userDisconnectedEvent += () => Console.WriteLine("User " + name + " disconnected to the server");
+        Console.WriteLine($"Connected as {name}. You can now start sending messages.");
 
-        //        input = Console.ReadLine();
+        var input = new MainViewModel(name);
 
-        //        if (input.Equals("login", StringComparison.OrdinalIgnoreCase))
-        //        {
-        //            Console.Write("Enter your name: ");
-        //            name = Console.ReadLine();
-
-        //            if (server.ConnectToServer(name))
-        //            {
-        //                Console.WriteLine("User logged in as: " + name);
-        //            }
-        //            else
-        //            {
-        //                Console.WriteLine("Failed to log in to the server. Please try again.");
-        //            }
-        //        }
-        //        else if (input.Equals("message", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(name))
-        //        {
-        //            Console.WriteLine("Message: ");
-        //            message = Console.ReadLine();
-        //            server.SendMessageToServer(message);
-        //            var msg = server.PacketReader.ReadMessage();
-        //            //Messages.Add(msg);
-        //            server.msgReceivedEvent += () => Console.WriteLine(msg);
-        //            //Console.WriteLine($"{name} sent message: {message}");
-        //        }
-        //        else if (input.Equals("exit", StringComparison.OrdinalIgnoreCase))
-        //        {
-        //            Console.WriteLine("Exiting the application...");
-        //            break; 
-        //        }
-        //        else if (string.IsNullOrEmpty(name))
-        //        {
-        //            Console.WriteLine("You need to log in first by typing 'log in'.");
-        //        }
-        //        else
-        //        {
-        //            Console.WriteLine("Unknown command. Please try again.");
-        //        }
-        //    }
-
-        //    Console.WriteLine("Press any key to exit...");
-        //    Console.ReadKey();
-        //}
-
-        //static void DisplayCommands()
-        //{
-        //    Console.WriteLine("Command list:");
-        //    Console.WriteLine("To log in, type 'login'.");
-        //    Console.WriteLine("To send a message, type 'message'.");
-        //    Console.WriteLine("To exit, type 'exit'.");
-        //}
+        // Allow the user to send messages
+        while (true)
+        {
+            Console.Write("Enter message: ");
+            var message = Console.ReadLine();
+            if (!string.IsNullOrEmpty(message))
+            {
+                input.SendMessage(message);
+                server.SendMessageToServer(message);
+            }
+            else
+            {
+                Console.WriteLine("Please enter a message.");
+            }
+        }
     }
 }
