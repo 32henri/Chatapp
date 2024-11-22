@@ -1,9 +1,6 @@
-.env:
-USER_ID=user1
-
-create-chatconsole.sh:
-@ -0,0 +1,15 @@
 #!/bin/bash
+set -x
+
 
 # Get the current number of chatconsole containers running
 num_consoles=$(docker ps -f "name=chatconsole" --format "{{.Names}}" | wc -l)
@@ -14,40 +11,21 @@ user_id="user$((num_consoles + 1))"
 # Set the USER_ID as an environment variable
 export USER_ID=$user_id
 
-# Start a new chatconsole instance using docker-compose and the dynamic USER_ID
+# Dynamically find the next available port starting from 7892
+base_port=7892
+next_port=$base_port
+
+# Check if the port is already in use, increment if it is
+while netstat -tuln | grep ":$next_port " > /dev/null; do
+  echo "Port $next_port is already in use, checking next port..."
+  next_port=$((next_port + 1))
+done
+
+# Set the dynamic PORT variable
+export PORT=$next_port
+
+# Scale the chatconsole service to create a new container with the dynamic port and user_id
 docker-compose up -d --scale chatconsole=$((num_consoles + 1))
 
-echo "Created new chatconsole instance with USER_ID: $user_id"
-
-dockercompose:
-services:
-  chatserver:
-    build:
-      context: ./ChatServer
-      dockerfile: Dockerfile
-    ports:
-      - "7891:7891"
-    networks:
-      - chat-network
-    container_name: chatserver
-
-  chatconsole:
-    build:
-      context: ./ChatConsole
-      dockerfile: Dockerfile
-    ports:
-      - "7892:7891"  # Default first chatconsole port
-    networks:
-      - chat-network
-
-    depends_on:
-      - chatserver
-    stdin_open: true
-    tty: true
-    environment:
-      - USER_ID=${USER_ID}  # Use the dynamic USER_ID here
-    restart: unless-stopped
-
-networks:
-  chat-network:
-
+# Inform the user of the new instance and port
+echo "Created new chatconsole instance with USER_ID: $user_id, using port $PORT"
