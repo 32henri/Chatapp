@@ -11,7 +11,7 @@ services:
       - chat-network
     container_name: chatserver
 
-  chatconsole:
+  chatconsole1:
     build:
       context: ./ChatConsole  # Build context is the ChatConsole directory
       dockerfile: Dockerfile
@@ -19,11 +19,29 @@ services:
       - "7892:7891"
     networks:
       - chat-network
-    container_name: chatconsole
+    container_name: chatconsole1
     depends_on:
       - chatserver
     stdin_open: true
     tty: true
+    environment:
+      - USER_ID=user1  # Unique user ID for chatconsole1
+
+  chatconsole2:
+    build:
+      context: ./ChatConsole  # Build context is the ChatConsole directory
+      dockerfile: Dockerfile
+    ports:
+      - "7893:7891"  # Mapping port for the second chatconsole
+    networks:
+      - chat-network
+    container_name: chatconsole2
+    depends_on:
+      - chatserver
+    stdin_open: true
+    tty: true
+    environment:
+      - USER_ID=user2  # Unique user ID for chatconsole2
 
 networks:
   chat-network:
